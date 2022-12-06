@@ -1,0 +1,7 @@
+node_modules/
+lib/
+docs/
+coverage/
+index.js
+index.mjs
+index.d.ts
