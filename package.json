@@ -20,7 +20,7 @@
     "index.d.ts"
   ],
   "scripts": {
-    "build": "tsc && mv index.js index.mjs && tsc --module CommonJS",
+    "build": "tsc --project tsconfig.build.json && mv index.js index.mjs && tsc --project tsconfig.build.json --module CommonJS",
     "test": "jest"
   },
   "repository": {

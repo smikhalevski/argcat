@@ -1,6 +1,6 @@
 <p align="center">
     <a href="#readme">
-        <img src="./logo.png" alt="argcat" width="450"/>
+        <img src="./argcat.png" alt="argcat" width="450"/>
     </a>
 </p>
 
@@ -60,10 +60,10 @@ Mark an option as a flag to prevent value capturing:
 
 ```ts
 parseArgs(['--foo', 'bar']);
-// ⮕  { '--foo': 'bar' }
+// ⮕  { foo: ['bar'] }
 
 parseArgs(['--foo', 'bar'], { flags: ['foo'] });
-// ⮕  { '--foo': true, '': ['bar'] }
+// ⮕  { foo: true, '': ['bar'] }
 ```
 
 Flag options have `true` value instead of an array.
@@ -113,7 +113,7 @@ const result = parseArgs(argv, { flags: ['tags'] });
 The first element of `''` is a command:
 
 ```ts
-const command = result[''].pop();
+const command = result[''].shift();
 
 if (command === 'push') {
   // Push it to the limit
@@ -136,13 +136,18 @@ their types.
 import { parseArgs } from 'argcat';
 import * as d from 'doubter';
 
-const argsShape = d.object({
-  foo: d.number()
-});
+// 1️⃣ Define the shape of a CLI options object
+const optionsShape = d
+  .object({
+    age: d.number()
+  })
+  .strip();
 
-const options = argsShape.parse(
-  // 🟡 This comes from process.argv.slice(2)
+const options = optionsShape.parse(
+  // 2️⃣ Convert process.argv.slice(2) to options
   parseArgs(['--age', '42']),
+  
+  // 3️⃣ Enable type coercion
   { coerce: true }
 );
 // ⮕  { age: 42 }
