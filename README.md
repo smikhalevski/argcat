@@ -1,4 +1,8 @@
-# argcat
+<p align="center">
+    <a href="#readme">
+        <img src="./logo.png" alt="argcat" width="450"/>
+    </a>
+</p>
 
 The simplest CLI arguments parser.
 
@@ -115,3 +119,9 @@ const options = argsShape.parse(
 );
 // ⮕  { age: 42 }
 ```
+
+<hr>
+
+<p align="center">
+    Cat by <a href="https://www.instagram.com/lauragravesart/">Laura Graves</a>
+</p>
