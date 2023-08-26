@@ -20,16 +20,33 @@ export interface ParseArgsOptions {
   keepShorthands?: boolean;
 }
 
+export interface ParsedArgs {
+  /**
+   * Keys parsed from the args.
+   */
+  [key: string]: string[] | true | undefined;
+
+  /**
+   * List of args that weren't associated with any key.
+   */
+  '': string[];
+
+  /**
+   * List of args after `'--'` arg, or `undefined` if there were no `'--'` arg.
+   */
+  '--'?: string[];
+}
+
 /**
  * Parses process arguments and returns a map from an option name to its value.
  *
  * @param args Arguments retrieved by `process.argv.slice(2)`.
  * @param options Parsing options.
  */
-export function parseArgs(args: string[], options: ParseArgsOptions = {}): { [key: string]: string[] | true } {
+export function parseArgs(args: string[], options: ParseArgsOptions = {}): ParsedArgs {
   const { flags, shorthands, keepShorthands } = options;
 
-  const result: { [key: string]: string[] | true } = {};
+  const result: ParsedArgs = { '': [] };
 
   let key: string | undefined = '';
 

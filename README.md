@@ -42,7 +42,7 @@ parseArgs(['--foo', 'bar', '--foo', 'qux']);
 // ⮕  { foo: ['bar', 'qux'] }
 ```
 
-Arguments that aren't prefixed are stored under `''` key:
+Arguments that aren't prefixed with minus chars are stored under `''` key:
 
 ```ts
 parseArgs(['foo', 'bar']);
@@ -92,11 +92,39 @@ parseArgs(['-abc'], { keepShorthands: true });
 // ⮕  { a: [], b: [], c: [] }
 ```
 
-Use `shorthand` mapping to expand shorthands: 
+Use `shorthand` mapping to expand shorthands:
 
 ```ts
 parseArgs(['-x'], { shorthands: { x: 'foo' } });
 // ⮕  { foo: [] }
+```
+
+# Commands
+
+argcat doesn't have a special treatment for commands syntax, but it can be easily emulated:
+
+```ts
+const argv = ['push', '--tags'];
+
+const result = parseArgs(argv, { flags: ['tags'] });
+// ⮕  { '': ['push'], tags: true }
+```
+
+The first element of `''` is a command:
+
+```ts
+const command = result[''].pop();
+
+if (command === 'push') {
+  // Push it to the limit
+}
+```
+
+Note that this approach allows user to specify options before the command:
+
+```ts
+const result = parseArgs(['--tags', 'push'], { flags: ['tags'] });
+// ⮕  { '': ['push'], tags: true }
 ```
 
 # Type coercion
@@ -113,7 +141,7 @@ const argsShape = d.object({
 });
 
 const options = argsShape.parse(
-  // 😉 Use process.argv.slice(2) instead of an array here 
+  // 🟡 This comes from process.argv.slice(2)
   parseArgs(['--age', '42']),
   { coerce: true }
 );
