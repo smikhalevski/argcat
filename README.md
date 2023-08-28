@@ -99,6 +99,16 @@ parseArgs(['-x'], { shorthands: { x: 'foo' } });
 // ⮕  { foo: [] }
 ```
 
+Shorthand options can have values:
+
+```ts
+parseArgs(['-x', 'bar'], { keepShorthands: true });
+// ⮕  { x: ['bar'] }
+
+parseArgs(['-abc', 'bar'], { keepShorthands: true });
+// ⮕  { a: [], b: [], c: ['bar'] }
+```
+
 # Commands
 
 argcat doesn't have a special treatment for commands syntax, but it can be easily emulated:

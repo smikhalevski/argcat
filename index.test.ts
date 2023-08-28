@@ -2,7 +2,7 @@ import { parseArgs } from './index';
 
 describe('parseArgs', () => {
   test('parses empty args', () => {
-    expect(parseArgs([])).toEqual({ '': [], });
+    expect(parseArgs([])).toEqual({ '': [] });
   });
 
   test('parses an arg', () => {
@@ -13,13 +13,15 @@ describe('parseArgs', () => {
     expect(parseArgs(['--foo'], { flags: ['foo'] })).toEqual({ '': [], foo: true });
   });
 
-  test('parses a flag shortcut', () => {
+  test('parses a flag shorthand', () => {
     expect(parseArgs(['-a'], { flags: ['a'], keepShorthands: true })).toEqual({ '': [], a: true });
+    expect(parseArgs(['-a'], { flags: ['a'], shorthands: { a: 'foo' } })).toEqual({ '': [], foo: true });
+    expect(parseArgs(['-a'], { flags: ['foo'], shorthands: { a: 'foo' } })).toEqual({ '': [], foo: true });
   });
 
-  test('parses a mixed shortcuts', () => {
+  test('parses a mixed shorthands', () => {
     expect(parseArgs(['-ab', 'aaa'], { flags: ['a'], keepShorthands: true })).toEqual({ '': [], a: true, b: ['aaa'] });
-    expect(parseArgs(['-ba', 'aaa'], { flags: ['a'], keepShorthands: true })).toEqual({ '': ['aaa'], a: true, b: [], });
+    expect(parseArgs(['-ba', 'aaa'], { flags: ['a'], keepShorthands: true })).toEqual({ '': ['aaa'], a: true, b: [] });
   });
 
   test('parses minus as a value', () => {
@@ -31,7 +33,7 @@ describe('parseArgs', () => {
   });
 
   test('does not parse a shorthand', () => {
-    expect(parseArgs(['-f'])).toEqual({ '': [], });
+    expect(parseArgs(['-f'])).toEqual({ '': [] });
   });
 
   test('keeps a shorthand', () => {
@@ -65,7 +67,7 @@ describe('parseArgs', () => {
   test('parses a shorthand with multiple values', () => {
     expect(parseArgs(['-f', 'bar', '-f', 'baz'], { shorthands: { f: 'foo' } })).toEqual({
       '': [],
-      foo: ['bar', 'baz']
+      foo: ['bar', 'baz'],
     });
   });
 
@@ -73,11 +75,11 @@ describe('parseArgs', () => {
     expect(parseArgs(['-ab', 'bar'], { shorthands: { a: 'aaa', b: 'bbb' } })).toEqual({
       '': [],
       aaa: [],
-      bbb: ['bar']
+      bbb: ['bar'],
     });
   });
 
-  test('unknown shortcuts do not receive a value', () => {
+  test('unknown shorthands do not receive a value', () => {
     expect(parseArgs(['-ab', 'bar'], { shorthands: { a: 'aaa' } })).toEqual({ '': [], aaa: [] });
   });
 
