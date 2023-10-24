@@ -22,9 +22,15 @@ export interface ParseArgsOptions {
 
 export interface ParsedArgs {
   /**
-   * Map from an option key to the list of associated values.
+   * Map from an option key (non-blank string) to the associated value.
+   *
+   * - `undefined` if a key wasn't provided;
+   * - `null` if a key was provided once without a value;
+   * - A string if the key was provided once with a value;
+   * - An array of `null`s and strings, if a key was provided multiple times;
+   * - `true` if the key {@link ParseArgsOptions.flags is a flag} and was provided at least once.
    */
-  [key: string]: string[] | true | undefined;
+  [key: string]: string | null | Array<string | null> | true | undefined;
 
   /**
    * The list of args that weren't associated with any option.
@@ -46,7 +52,9 @@ export interface ParsedArgs {
 export function parseArgs(args: string[], options: ParseArgsOptions = {}): ParsedArgs {
   const { flags, shorthands, keepShorthands } = options;
 
-  const result: ParsedArgs = { '': [] };
+  const result: ParsedArgs = Object.create(null);
+
+  result[''] = [];
 
   let key: string | null = '';
 
@@ -60,26 +68,36 @@ export function parseArgs(args: string[], options: ParseArgsOptions = {}): Parse
       if (arg.charCodeAt(1) === CHAR_CODE_MINUS) {
         // '--'
         if (argLength === 2) {
+          if (key) {
+            putValue(result, key, null);
+          }
+
           result['--'] = args.slice(i + 1);
+          key = null;
           break;
         }
 
-        // '--foo'
+        // '--foo', but not '---*'
         if (arg.charCodeAt(2) !== CHAR_CODE_MINUS) {
+          if (key) {
+            putValue(result, key, null);
+          }
+
           key = arg.substring(2);
 
           if (flags && flags.includes(key)) {
             result[key] = true;
             key = '';
-          } else {
-            result[key] ||= [];
           }
           continue;
         }
       } else {
         // -abc is the same as -a -b -c
-
         for (let j = 1; j < argLength; j++) {
+          if (key) {
+            putValue(result, key, null);
+          }
+
           const shorthand = arg.charAt(j);
 
           const longhand = shorthands ? shorthands[shorthand] : undefined;
@@ -95,22 +113,31 @@ export function parseArgs(args: string[], options: ParseArgsOptions = {}): Parse
           if (flags && (flags.includes(shorthand) || (longhand && flags.includes(longhand)))) {
             result[key] = true;
             key = '';
-          } else {
-            result[key] ||= [];
           }
         }
         continue;
       }
     }
 
-    if (key === null) {
-      continue;
+    if (key !== null) {
+      // Only ignore value of an unknown shorthand
+      putValue(result, key, arg);
     }
-
-    ((result[key] ||= []) as string[]).push(arg);
-
     key = '';
   }
 
+  if (key) {
+    putValue(result, key, null);
+  }
   return result;
+}
+
+function putValue(result: ParsedArgs, key: string, arg: string | null): void {
+  const value = result[key];
+
+  if (Array.isArray(value)) {
+    value.push(arg);
+  } else {
+    result[key] = value === undefined || value === true ? arg : [value, arg];
+  }
 }
